@@ -881,8 +881,9 @@ if [ "$Audit6_2" = "1" ]; then
 filenameExt=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.finder AppleShowAllExtensions)
 if [ "$filenameExt" = "1" ]; then
 	echo "6.2 passed"; else
-	# defaults write NSGlobalDomain AppleShowAllExtensions -bool true
-	defaults write /Users/"$currentUser"/Library/Preferences/.GlobalPreferences.plist AppleShowAllExtensions -bool true
+	sudo -u "$currentUser" defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+	pkill -u "$currentUser" Finder
+	# defaults write /Users/"$currentUser"/Library/Preferences/.GlobalPreferences.plist AppleShowAllExtensions -bool true
 fi
 fi
 
