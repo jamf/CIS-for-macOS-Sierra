@@ -547,14 +547,26 @@ fi
 Audit3_1_1="$(defaults read "$plistlocation" OrgScore3_1_1)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit3_1_1" = "1" ]; then
-	sysRetention=$(grep -i ttl /etc/asl.conf | awk -F'ttl=' '{print $2}')
+	sysRetention=$(grep "system.log" /etc/asl.conf | grep "ttl" | awk -F'ttl=' '{print $2}')
 	# If client fails, then note category in audit file
-	if [ "$sysRetention" -lt "90" ]; then
+	if [ "$sysRetention" -lt "90" ] || [ "$sysRetention" = "" ]; then
 		echo "* 3.1.1 Retain system.log for 90 or more days" >> "$auditfilelocation"; else
 		echo "3.1.1 passed"
 	fi
 fi
 
+# 3.1.2 Retain appfirewall.log for 90 or more days 
+# Verify organizational score
+Audit3_1_2="$(defaults read "$plistlocation" OrgScore3_1_2)"
+# If organizational score is 1 or true, check status of client
+if [ "$Audit3_1_2" = "1" ]; then
+	alfRetention=$(grep "appfirewall.log" /etc/asl.conf | grep "ttl" | awk -F'ttl=' '{print $2}')
+	# If client fails, then note category in audit file
+	if [ "$alfRetention" -lt "90" ] || [ "$alfRetention" = "" ]; then
+		echo "* 3.1.2 Retain appfirewall.log for 90 or more days" >> "$auditfilelocation"; else
+		echo "3.1.2 passed"
+	fi
+fi
 
 # 3.1.3 Retain authd.log for 90 or more days
 # Verify organizational score
