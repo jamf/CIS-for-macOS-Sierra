@@ -150,7 +150,7 @@ fi
 Audit2_2_2="$(defaults read "$plistlocation" OrgScore2_2_2)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit2_2_2" = "1" ]; then
-	timeServer=$(systemsetup -getnetworktimeserver | awk '{print $4}' | sed 's/.$//')
+	timeServer=$(systemsetup -getnetworktimeserver | awk '{print $4}')
 	ntpdate -sv "$timeServer"
 fi
 
@@ -467,16 +467,49 @@ Audit3_1_1="$(defaults read "$plistlocation" OrgScore3_1_1)"
 # If organizational score is 1 or true, check status of client
 # If client fails, then remediate
 if [ "$Audit3_1_1" = "1" ]; then
-syslogRetention=$(grep -i ttl /etc/asl.conf | awk -F'style=lcl-b\ ttl=' '{print $2}')
-if [ "$syslogRetention" -lt "90" ]; then
-	mv /etc/asl.conf /etc/asl_old.conf
-	sed "s/"style=lcl-b\ ttl=$syslogRetention"/"style=lcl-b\ ttl=90"/g" /etc/asl_old.conf >  /etc/asl.conf
-	chmod 644 /etc/asl.conf
-	chown root:wheel /etc/asl.conf
-fi
+	sysRetention=$(grep "system.log" /etc/asl.conf | grep "ttl" | awk -F'ttl=' '{print $2}')
+	if [ "$sysRetention" -gt "89" ]; then
+	echo "3.1.1 passed"; else
+		if [ "$sysRetention" = "" ]; then
+			mv /etc/asl.conf /etc/asl_sys_old.conf
+			awk '/system\.log /{$0=$0 " ttl=90"}1' /etc/asl_sys_old.conf >  /etc/asl.conf
+			chmod 644 /etc/asl.conf
+			chown root:wheel /etc/asl.conf; else
+		if [ "$sysRetention" -lt "90" ]; then
+			mv /etc/asl.conf /etc/asl_sys_old.conf
+			sed "s/"ttl=$sysRetention"/"ttl=90"/g" /etc/asl_sys_old.conf >  /etc/asl.conf
+			chmod 644 /etc/asl.conf
+			chown root:wheel /etc/asl.conf
+		fi
+		fi
+	fi
 fi
 
 
+
+# 3.1.2 Retain appfirewall.log for 90 or more days 
+# Verify organizational score
+Audit3_1_2="$(defaults read "$plistlocation" OrgScore3_1_2)"
+# If organizational score is 1 or true, check status of client
+# If client fails, then remediate
+if [ "$Audit3_1_2" = "1" ]; then
+	alfRetention=$(grep "appfirewall.log" /etc/asl.conf | grep "ttl" | awk -F'ttl=' '{print $2}')
+	if [ "$alfRetention" -gt "89" ]; then
+	echo "3.1.2 passed"; else
+		if [ "$alfRetention" = "" ]; then
+			mv /etc/asl.conf /etc/asl_alf_old.conf
+			awk '/appfirewall\.log /{$0=$0 " ttl=90"}1' /etc/asl_alf_old.conf >  /etc/asl.conf
+			chmod 644 /etc/asl.conf
+			chown root:wheel /etc/asl.conf; else
+		if [ "$alfRetention" -lt "90" ]; then
+			mv /etc/asl.conf /etc/asl_alf_old.conf
+			sed "s/"ttl=$alfRetention"/"ttl=90"/g" /etc/asl_alf_old.conf >  /etc/asl.conf
+			chmod 644 /etc/asl.conf
+			chown root:wheel /etc/asl.conf
+		fi
+		fi
+	fi
+fi
 
 # 3.1.3 Retain authd.log for 90 or more days
 # Verify organizational score
