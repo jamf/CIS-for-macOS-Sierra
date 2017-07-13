@@ -256,12 +256,15 @@ Audit2_4_2="$(defaults read "$plistlocation" OrgScore2_4_2)"
 # If organizational score is 1 or true, check status of client
 # If client fails, then note category in audit file
 if [ "$Audit2_4_2" = "1" ]; then
-	natAirport=$(/usr/libexec/PlistBuddy -c "print :NAT:AirPort:Enabled" /Library/Preferences/SystemConfiguration/com.apple.nat.plist)
-	natEnabled=$(/usr/libexec/PlistBuddy -c "print :NAT:Enabled" /Library/Preferences/SystemConfiguration/com.apple.nat.plist)
-	natPrimary=$(/usr/libexec/PlistBuddy -c "print :NAT:PrimaryInterface:Enabled" /Library/Preferences/SystemConfiguration/com.apple.nat.plist)
-	if [ "$natAirport" = "0" ] && [ "$natEnabled" = "0" ] && [ "$natPrimary" = "0" ]; then
-	 	echo "2.4.2 passed"; else
-		echo "* 2.4.2 Disable Internet Sharing" >> "$auditfilelocation"
+	if [ -e /Library/Preferences/SystemConfiguration/com.apple.nat.plist ]; then
+		natAirport=$(/usr/libexec/PlistBuddy -c "print :NAT:AirPort:Enabled" /Library/Preferences/SystemConfiguration/com.apple.nat.plist)
+		natEnabled=$(/usr/libexec/PlistBuddy -c "print :NAT:Enabled" /Library/Preferences/SystemConfiguration/com.apple.nat.plist)
+		natPrimary=$(/usr/libexec/PlistBuddy -c "print :NAT:PrimaryInterface:Enabled" /Library/Preferences/SystemConfiguration/com.apple.nat.plist)
+		if [ "$natAirport" = "true" ] || [ "$natEnabled" = "true" ] || [ "$natPrimary" = "true" ]; then
+			echo "* 2.4.2 Disable Internet Sharing"  >> "$auditfilelocation"; else
+			echo "2.4.2 passed"
+		fi; else
+		echo "2.4.2 passed"
 	fi
 fi
 
