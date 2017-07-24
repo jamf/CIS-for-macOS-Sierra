@@ -676,7 +676,7 @@ installRetention=$(grep -i ttl /etc/asl/com.apple.install | awk -F'ttl=' '{print
 		echo $(date -u) "3.5 remediated" | tee -a "$logFile"
 	fi
 fi
-
+fi
 
 # 4.1 Disable Bonjour advertising service 
 # Verify organizational score
@@ -866,7 +866,7 @@ if [ "$Audit5_6" = "1" ]; then
 		defaults write com.apple.security.revocation OCSPStyle -string RequireIfPresent
 		defaults write com.apple.security.revocation CRLStyle -string RequireIfPresent
 		echo $(date -u) "5.6 remediated" | tee -a "$logFile"
-		fi; else
+		else
 		echo $(date -u) "5.6 passed" | tee -a "$logFile"
 	fi
 fi
