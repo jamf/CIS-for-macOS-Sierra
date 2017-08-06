@@ -327,7 +327,7 @@ echo $(date -u) "Checking 2.4.5" | tee -a "$logFile"
 remoteLogin=$(systemsetup -getremotelogin | awk '{print $3}')
 if [ "$remoteLogin" = "Off" ]; then
  	echo $(date -u) "2.4.5 passed" | tee -a "$logFile"; else
-	systemsetup -setremotelogin off
+	systemsetup -f -setremotelogin off
 	echo $(date -u) "2.4.5 remediated" | tee -a "$logFile"
 fi
 fi
