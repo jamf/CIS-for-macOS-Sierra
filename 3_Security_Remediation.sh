@@ -57,7 +57,7 @@ Audit1_1="$(defaults read "$plistlocation" OrgScore1_1)"
 # If client fails, then remediate
 if [ "$Audit1_1" = "1" ]; then
 echo $(date -u) "Checking 1.1" | tee -a "$logFile"
-countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l)"
+countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l | tr -d ' ')"
 if [ "$countAvailableSUS" = "0" ]; then
 	echo $(date -u) "1.1 passed" | tee -a "$logFile"; else
 	# NOTE: INSTALLS ALL RECOMMENDED SOFTWARE UPDATES FROM CLIENT'S CONFIGURED SUS SERVER
