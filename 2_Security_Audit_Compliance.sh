@@ -446,7 +446,7 @@ Audit2_6_5="$(defaults read "$plistlocation" OrgScore2_6_5)"
 if [ "$Audit2_6_5" = "1" ]; then
 	appsInbound=$(/usr/libexec/ApplicationFirewall/socketfilterfw --listapps | grep ALF | awk '{print $7}')
 	# If client fails, then note category in audit file
-	if [ "$appsInbound" -le "10" ]; then
+	if [ "$appsInbound" -le "10" ] || [ -z "$appsInbound" ]; then
 		echo "2.6.5 passed"; else
 		echo "* 2.6.5 Review Application Firewall Rules" >> "$auditfilelocation"
 	fi
