@@ -479,7 +479,7 @@ Audit2_6_5="$(defaults read "$plistlocation" OrgScore2_6_5)"
 if [ "$Audit2_6_5" = "1" ]; then
 echo $(date -u) "Checking 2.6.5" | tee -a "$logFile"
 appsInbound=$(/usr/libexec/ApplicationFirewall/socketfilterfw --listapps | grep ALF | awk '{print $7}')
-if [ "$appsInbound" -le "10" ] || [ "$appsInbound" = "" ]; then
+if [ "$appsInbound" -le "10" ] || [ -z "$appsInbound" ]; then
 	echo $(date -u) "2.6.5 passed" | tee -a "$logFile"; else
 	echo $(date -u) "2.6.5 not remediated" | tee -a "$logFile"
 fi
