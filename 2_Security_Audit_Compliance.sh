@@ -58,7 +58,7 @@ hardwareUUID=$( /usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UU
 Audit1_1="$(defaults read "$plistlocation" OrgScore1_1)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit1_1" = "1" ]; then
-	countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l)"
+	countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l | tr -d ' ')"
 	# If client fails, then note category in audit file
 	if [ "$countAvailableSUS" = "0" ]; then
 		echo "1.1 passed"; else
