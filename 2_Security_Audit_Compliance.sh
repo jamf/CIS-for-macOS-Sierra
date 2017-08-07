@@ -630,7 +630,7 @@ Audit4_1="$(defaults read "$plistlocation" OrgScore4_1)"
 if [ "$Audit4_1" = "1" ]; then
 	bonjourAdvertise=$( defaults read /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements )
 	# If client fails, then note category in audit file
-	if [ "$bonjourAdvertise" != "0" ]; then
+	if [ "$bonjourAdvertise" != "1" ]; then
 		echo "* 4.1 Disable Bonjour advertising service" >> "$auditfilelocation"; else
 		echo "4.1 passed"
 	fi
