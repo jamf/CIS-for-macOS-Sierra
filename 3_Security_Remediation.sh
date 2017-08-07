@@ -865,6 +865,8 @@ if [ "$Audit5_6" = "1" ]; then
 	if [ "$certificateCheckOCSP" != "RequireIfPresent" ] || [ "$certificateCheckCRL" != "RequireIfPresent" ]; then
 		defaults write com.apple.security.revocation OCSPStyle -string RequireIfPresent
 		defaults write com.apple.security.revocation CRLStyle -string RequireIfPresent
+		defaults write /Users/"$currentUser"/Library/Preferences/com.apple.security.revocation OCSPStyle -string RequireIfPresent
+		defaults write /Users/"$currentUser"/Library/Preferences/com.apple.security.revocation CRLStyle -string RequireIfPresent
 		echo $(date -u) "5.6 remediated" | tee -a "$logFile"
 		else
 		echo $(date -u) "5.6 passed" | tee -a "$logFile"
