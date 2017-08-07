@@ -685,12 +685,12 @@ Audit4_1="$(defaults read "$plistlocation" OrgScore4_1)"
 # If client fails, then remediate
 if [ "$Audit4_1" = "1" ]; then
 echo $(date -u) "Checking 4.1" | tee -a "$logFile"
-bonjourAdvertise=$(defaults read /Library/Preferences/com.apple.alf globalstate)
-if [ "$bonjourAdvertise" = "0" ]; then
-	defaults read /Library/Preferences/com.apple.alf globalstate -int 1
-	echo $(date -u) "4.1 remediated" | tee -a "$logFile"; else
-	echo $(date -u) "4.1 passed" | tee -a "$logFile"
-fi
+bonjourAdvertise=$(defaults read /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements)
+    if [ "$bonjourAdvertise" != "1" ]; then
+	    defaults write /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements -int 1
+	    echo $(date -u) "4.1 remediated" | tee -a "$logFile"; else
+	    echo $(date -u) "4.1 passed" | tee -a "$logFile"
+    fi
 fi
 
 # 4.2 Enable "Show Wi-Fi status in menu bar" 
