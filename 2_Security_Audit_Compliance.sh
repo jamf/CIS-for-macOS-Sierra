@@ -58,7 +58,7 @@ hardwareUUID=$( /usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UU
 Audit1_1="$(defaults read "$plistlocation" OrgScore1_1)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit1_1" = "1" ]; then
-	countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l)"
+	countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l | tr -d ' ')"
 	# If client fails, then note category in audit file
 	if [ "$countAvailableSUS" = "0" ]; then
 		echo "1.1 passed"; else
@@ -446,7 +446,7 @@ Audit2_6_5="$(defaults read "$plistlocation" OrgScore2_6_5)"
 if [ "$Audit2_6_5" = "1" ]; then
 	appsInbound=$(/usr/libexec/ApplicationFirewall/socketfilterfw --listapps | grep ALF | awk '{print $7}')
 	# If client fails, then note category in audit file
-	if [ "$appsInbound" -le "10" ]; then
+	if [ "$appsInbound" -le "10" ] || [ -z "$appsInbound" ]; then
 		echo "2.6.5 passed"; else
 		echo "* 2.6.5 Review Application Firewall Rules" >> "$auditfilelocation"
 	fi
@@ -630,7 +630,7 @@ Audit4_1="$(defaults read "$plistlocation" OrgScore4_1)"
 if [ "$Audit4_1" = "1" ]; then
 	bonjourAdvertise=$( defaults read /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements )
 	# If client fails, then note category in audit file
-	if [ "$bonjourAdvertise" != "0" ]; then
+	if [ "$bonjourAdvertise" != "1" ]; then
 		echo "* 4.1 Disable Bonjour advertising service" >> "$auditfilelocation"; else
 		echo "4.1 passed"
 	fi

@@ -57,7 +57,7 @@ Audit1_1="$(defaults read "$plistlocation" OrgScore1_1)"
 # If client fails, then remediate
 if [ "$Audit1_1" = "1" ]; then
 echo $(date -u) "Checking 1.1" | tee -a "$logFile"
-countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l)"
+countAvailableSUS="$(softwareupdate -l | grep "*" | wc -l | tr -d ' ')"
 if [ "$countAvailableSUS" = "0" ]; then
 	echo $(date -u) "1.1 passed" | tee -a "$logFile"; else
 	# NOTE: INSTALLS ALL RECOMMENDED SOFTWARE UPDATES FROM CLIENT'S CONFIGURED SUS SERVER
@@ -327,7 +327,7 @@ echo $(date -u) "Checking 2.4.5" | tee -a "$logFile"
 remoteLogin=$(systemsetup -getremotelogin | awk '{print $3}')
 if [ "$remoteLogin" = "Off" ]; then
  	echo $(date -u) "2.4.5 passed" | tee -a "$logFile"; else
-	systemsetup -setremotelogin off
+	systemsetup -f -setremotelogin off
 	echo $(date -u) "2.4.5 remediated" | tee -a "$logFile"
 fi
 fi
@@ -479,7 +479,7 @@ Audit2_6_5="$(defaults read "$plistlocation" OrgScore2_6_5)"
 if [ "$Audit2_6_5" = "1" ]; then
 echo $(date -u) "Checking 2.6.5" | tee -a "$logFile"
 appsInbound=$(/usr/libexec/ApplicationFirewall/socketfilterfw --listapps | grep ALF | awk '{print $7}')
-if [ "$appsInbound" -le "10" ] || [ "$appsInbound" = "" ]; then
+if [ "$appsInbound" -le "10" ] || [ -z "$appsInbound" ]; then
 	echo $(date -u) "2.6.5 passed" | tee -a "$logFile"; else
 	echo $(date -u) "2.6.5 not remediated" | tee -a "$logFile"
 fi
@@ -676,7 +676,7 @@ installRetention=$(grep -i ttl /etc/asl/com.apple.install | awk -F'ttl=' '{print
 		echo $(date -u) "3.5 remediated" | tee -a "$logFile"
 	fi
 fi
-
+fi
 
 # 4.1 Disable Bonjour advertising service 
 # Verify organizational score
@@ -685,12 +685,12 @@ Audit4_1="$(defaults read "$plistlocation" OrgScore4_1)"
 # If client fails, then remediate
 if [ "$Audit4_1" = "1" ]; then
 echo $(date -u) "Checking 4.1" | tee -a "$logFile"
-bonjourAdvertise=$(defaults read /Library/Preferences/com.apple.alf globalstate)
-if [ "$bonjourAdvertise" = "0" ]; then
-	defaults read /Library/Preferences/com.apple.alf globalstate -int 1
-	echo $(date -u) "4.1 remediated" | tee -a "$logFile"; else
-	echo $(date -u) "4.1 passed" | tee -a "$logFile"
-fi
+bonjourAdvertise=$(defaults read /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements)
+    if [ "$bonjourAdvertise" != "1" ]; then
+	    defaults write /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements -int 1
+	    echo $(date -u) "4.1 remediated" | tee -a "$logFile"; else
+	    echo $(date -u) "4.1 passed" | tee -a "$logFile"
+    fi
 fi
 
 # 4.2 Enable "Show Wi-Fi status in menu bar" 
@@ -865,8 +865,10 @@ if [ "$Audit5_6" = "1" ]; then
 	if [ "$certificateCheckOCSP" != "RequireIfPresent" ] || [ "$certificateCheckCRL" != "RequireIfPresent" ]; then
 		defaults write com.apple.security.revocation OCSPStyle -string RequireIfPresent
 		defaults write com.apple.security.revocation CRLStyle -string RequireIfPresent
+		defaults write /Users/"$currentUser"/Library/Preferences/com.apple.security.revocation OCSPStyle -string RequireIfPresent
+		defaults write /Users/"$currentUser"/Library/Preferences/com.apple.security.revocation CRLStyle -string RequireIfPresent
 		echo $(date -u) "5.6 remediated" | tee -a "$logFile"
-		fi; else
+		else
 		echo $(date -u) "5.6 passed" | tee -a "$logFile"
 	fi
 fi
