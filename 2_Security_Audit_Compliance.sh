@@ -876,7 +876,7 @@ Audit5_13="$(defaults read "$plistlocation" OrgScore5_13)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit5_13" = "1" ]; then
 	# If client fails, then note category in audit file
-	if [ -e /Library/Security/PolicyBanner.txt ]; then
+	if [ -e /Library/Security/PolicyBanner.txt ] || [ -e /Library/Security/PolicyBanner.rtf ] || [ -e /Library/Security/PolicyBanner.rtfd ]; then
 		echo "5.13 passed"; else
 		echo "* 5.13 Create a Login window banner" >> "$auditfilelocation"
 	fi
