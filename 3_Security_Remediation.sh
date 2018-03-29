@@ -40,6 +40,10 @@
 plistlocation="/Library/Application Support/SecurityScoring/org_security_score.plist"
 currentUser=$( ls -l /dev/console | cut -d " " -f4 )
 hardwareUUID=$(/usr/sbin/system_profiler SPHardwareDataType | grep "Hardware UUID" | awk -F ": " '{print $2}' | xargs)
+macos_version=$(sw_vers -productVersion)
+os_vers=( ${macos_version//./ } )
+os_vers_major="${os_vers[0]}"
+os_vers_minor="${os_vers[1]}"
 
 logFile="/Library/Application Support/SecurityScoring/remediation.log"
 echo $(date -u) "Beginning remediation" > "$logFile"
@@ -654,28 +658,30 @@ Audit3_5="$(defaults read "$plistlocation" OrgScore3_5)"
 # If client fails, then remediate
 if [ "$Audit3_5" = "1" ]; then
 echo $(date -u) "Checking 3.5" | tee -a "$logFile"
-installRetention=$(grep -i ttl /etc/asl/com.apple.install | awk -F'ttl=' '{print $2}')
-	if [ "$installRetention" -gt "364" ]; then
-		echo $(date -u) "3.5 passed" | tee -a "$logFile"
+	if [[ ${os_vers_major} -eq 10 ]] && [[ ${os_vers_minor} -ge 13 ]]; then
+		echo $(date -u) "3.5 not applicable to macOS 10.13" | tee -a "$logFile"
+	else
+	installRetention=$(grep -i ttl /etc/asl/com.apple.install | awk -F'ttl=' '{print $2}')
+		if [ "$installRetention" -gt "364" ]; then
+			echo $(date -u) "3.5 passed" | tee -a "$logFile"
+		fi
+		if [ "$installRetention" = "" ] || [ "$installRetention" -lt "365" ]; then
+			if [ "$installRetention" = "" ]; then
+				mv /etc/asl/com.apple.install /etc/asl/com.apple.install.old
+				sed "s/"format=bsd"/"format=bsd\ ttl=365"/g" /etc/asl/com.apple.install.old >  /etc/asl/com.apple.install
+				chmod 644 /etc/asl/com.apple.install
+				chown root:wheel /etc/asl/com.apple.install
+				echo $(date -u) "3.5 remediated" | tee -a "$logFile"
+			fi
+			if [ "$installRetention" -lt "365"  ]; then
+				mv /etc/asl/com.apple.install /etc/asl/com.apple.install.old
+				sed "s/"ttl=$installRetention"/"ttl=365"/g" /etc/asl/com.apple.install.old >  /etc/asl/com.apple.install
+				chmod 644 /etc/asl/com.apple.install
+				chown root:wheel /etc/asl/com.apple.install
+				echo $(date -u) "3.5 remediated" | tee -a "$logFile"
+			fi
+		fi
 	fi
-if [ "$installRetention" = "" ] || [ "$installRetention" -lt "365" ]; then
-	if [ "$installRetention" = "" ]; then
-		mv /etc/asl/com.apple.install /etc/asl/com.apple.install.old
-		sed "s/"format=bsd"/"format=bsd\ ttl=365"/g" /etc/asl/com.apple.install.old >  /etc/asl/com.apple.install
-		chmod 644 /etc/asl/com.apple.install
-		chown root:wheel /etc/asl/com.apple.install
-		echo $(date -u) "3.5 remediated" | tee -a "$logFile"
-	fi
-
-installRetention=$(grep -i ttl /etc/asl/com.apple.install | awk -F'ttl=' '{print $2}')
-	if [ "$installRetention" -lt "365"  ]; then
-		mv /etc/asl/com.apple.install /etc/asl/com.apple.install.old
-		sed "s/"ttl=$installRetention"/"ttl=365"/g" /etc/asl/com.apple.install.old >  /etc/asl/com.apple.install
-		chmod 644 /etc/asl/com.apple.install
-		chown root:wheel /etc/asl/com.apple.install
-		echo $(date -u) "3.5 remediated" | tee -a "$logFile"
-	fi
-fi
 fi
 
 # 4.1 Disable Bonjour advertising service 
@@ -800,7 +806,7 @@ Audit5_1_4="$(defaults read "$plistlocation" OrgScore5_1_4)"
 if [ "$Audit5_1_4" = "1" ]; then
 echo $(date -u) "Checking 5.1.4" | tee -a "$logFile"
 # Exempts Adobe files by default!
-# for libPermissions in $( find /Library -type d -perm -2 -ls | grep -v Caches ); do
+# for libPermissions in $( find /Library -type d -perm -2 | grep -v Caches ); do
 for libPermissions in $( find /Library -type d -perm -2 -ls | grep -v Caches | grep -v Adobe); do
             chmod -R o-w "$libPermissions"
         done
