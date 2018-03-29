@@ -39,6 +39,10 @@
 
 plistlocation="/Library/Application Support/SecurityScoring/org_security_score.plist"
 auditfilelocation="/Library/Application Support/SecurityScoring/org_audit"
+macos_version=$(sw_vers -productVersion)
+os_vers=( ${macos_version//./ } )
+os_vers_major="${os_vers[0]}"
+os_vers_minor="${os_vers[1]}"
 
 if [[ ! -e $plistlocation ]]; then
 	echo "No scoring file present"
@@ -615,11 +619,15 @@ fi
 Audit3_5="$(defaults read "$plistlocation" OrgScore3_5)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit3_5" = "1" ]; then
-	installRetention=$(grep -i ttl /etc/asl/com.apple.install | awk -F'ttl=' '{print $2}')
-	# If client fails, then note category in audit file
-	if [ "$installRetention" = "" ] || [ "$installRetention" -lt "365" ]; then
-		echo "* 3.5 Retain install.log for 365 or more days" >> "$auditfilelocation"; else
-		echo "3.5 passed"
+	if [[ ${os_vers_major} -eq 10 ]] && [[ ${os_vers_minor} -lt 13 ]]; then
+		installRetention=$(grep -i ttl /etc/asl/com.apple.install | awk -F'ttl=' '{print $2}')
+		# If client fails, then note category in audit file
+		if [ "$installRetention" = "" ] || [ "$installRetention" -lt "365" ]; then
+			echo "* 3.5 Retain install.log for 365 or more days" >> "$auditfilelocation"; else
+			echo "3.5 passed"
+		fi
+	else
+	echo "3.5 not applicable to macOS 10.13"
 	fi
 fi
 
@@ -730,7 +738,7 @@ fi
 Audit5_1_4="$(defaults read "$plistlocation" OrgScore5_1_4)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit5_1_4" = "1" ]; then
-	libPermissions=$(find /Library -type d -perm -2 -ls | grep -v Caches | wc -l | xargs)
+	libPermissions=$(find /Library -type d -perm -2 | grep -v Caches | wc -l | xargs)
 	# If client fails, then note category in audit file
 	if [ "$libPermissions" = "0" ]; then
 		echo "5.1.4 passed"; else
