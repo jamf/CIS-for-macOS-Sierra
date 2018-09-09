@@ -30,6 +30,7 @@
 
 # written by Katie English, Jamf October 2016
 # updated for 10.12 CIS benchmarks by Katie English, Jamf February 2017
+# updated by Laurent Pertois, Jamf September 2018
 # github.com/jamfprofessionalservices
 
 # USAGE
@@ -218,9 +219,9 @@ if [ "$Audit2_3_2" = "1" ]; then
 	tr_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tr-corner)
 	br_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner)
 	# If client fails, then note category in audit file
-	if [ "$bl_corner" = "6" ] || [ "$tl_corner" = "6" ] || [ "$tr_corner" = "6" ] || [ "$br_corner" = "6" ]; then
-		echo "* 2.3.2 Secure screen saver corners" >> "$auditfilelocation"; else
-		echo "2.3.2 passed"
+	if [[ ( "$bl_corner" != "6" && "$bl_corner" != "" ) ]] && [[ ("$tl_corner" != "6" && "$tl_corner" != "" )  ]] && [[ ("$tr_corner" != "6" && "$tr_corner" != "" ) ]] && [[ ("$br_corner" != "6" && "$br_corner" != "" ) ]]; then
+		echo "2.3.2 passed"; else
+		echo "* 2.3.2 Secure screen saver corners" >> "$auditfilelocation"
 	fi
 fi
 
@@ -450,7 +451,7 @@ Audit2_6_5="$(defaults read "$plistlocation" OrgScore2_6_5)"
 if [ "$Audit2_6_5" = "1" ]; then
 	appsInbound=$(/usr/libexec/ApplicationFirewall/socketfilterfw --listapps | grep ALF | awk '{print $7}')
 	# If client fails, then note category in audit file
-	if [ "$appsInbound" -le "10" ] || [ -z "$appsInbound" ]; then
+	if [ -z "$appsInbound" ] || [ "$appsInbound" -le "10" ]; then
 		echo "2.6.5 passed"; else
 		echo "* 2.6.5 Review Application Firewall Rules" >> "$auditfilelocation"
 	fi
@@ -923,6 +924,10 @@ Audit6_1_2="$(defaults read "$plistlocation" OrgScore6_1_2)"
 if [ "$Audit6_1_2" = "1" ]; then
 	passwordHints=$(defaults read /Library/Preferences/com.apple.loginwindow RetriesUntilHint)
 	# If client fails, then note category in audit file
+	if [ -z "$passwordHints" ]; then
+		passwordHints=0
+	fi
+		
 	if [ "$passwordHints" -gt 0 ]; then
 		echo "* 6.1.2 Disable Show password hints" >> "$auditfilelocation"; else
 		echo "6.1.2 passed"
@@ -973,7 +978,7 @@ fi
 Audit6_2="$(defaults read "$plistlocation" OrgScore6_2)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit6_2" = "1" ]; then
-	filenameExt=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.finder AppleShowAllExtensions)
+	filenameExt=$(defaults read /Users/"$currentUser"/Library/Preferences/.GlobalPreferences AppleShowAllExtensions)
 	# If client fails, then note category in audit file
 	if [ "$filenameExt" = "1" ]; then
 		echo "6.2 passed"; else
