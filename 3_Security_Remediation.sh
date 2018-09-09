@@ -30,6 +30,7 @@
 
 # written by Katie English, Jamf October 2016
 # updated for 10.12 CIS benchmarks by Katie English, Jamf February 2017
+# updated by Laurent Pertois, Jamf September 2018
 # github.com/jamfprofessionalservices
 
 # USAGE
@@ -216,39 +217,34 @@ Audit2_3_2="$(defaults read "$plistlocation" OrgScore2_3_2)"
 # If organizational score is 1 or true, check status of client
 # If client fails, then remediate
 if [ "$Audit2_3_2" = "1" ]; then
-	echo $(date -u) "Checking 2.3.2" | tee -a "$logFile"
-	bl_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner)
-	tl_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tl-corner)
-	tr_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tr-corner)
-	br_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner)
-		
-	if [ "$bl_corner" != "6" ] && [ "$tl_corner" != "6" ] && [ "$tr_corner" != "6" ] && [ "$br_corner" != "6" ]; then
-		echo $(date -u) "2.3.2 passed" | tee -a "$logFile"
-	fi		
-		
-	if [ "$bl_corner" = "6" ]; then
-	echo "Disabling hot corner"
-	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner 1
-	echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
-	fi
-
-	if [ "$tl_corner" = "6" ]; then
-	echo "Disabling hot corner"
-	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tl-corner 1
-	echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
-	fi
-
-	if [ "$tr_corner" = "6" ]; then
-	echo "Disabling hot corner"
-	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tr-corner 1
-	echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
-	fi
-
-	if [ "$br_corner" = "6" ]; then
-	echo "Disabling hot corner"
-	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner 1
-	echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
-	fi
+        echo $(date -u) "Checking 2.3.2" | tee -a "$logFile"
+        bl_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner)
+        tl_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tl-corner)
+        tr_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tr-corner)
+        br_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner)
+        if [[ ( "$bl_corner" != "6" && "$bl_corner" != "" ) ]] && [[ ("$tl_corner" != "6" && "$tl_corner" != "" )  ]] && [[ ("$tr_corner" != "6" && "$tr_corner" != "" ) ]] && [[ ("$br_corner" != "6" && "$br_corner" != "" ) ]]; then
+                echo $(date -u) "2.3.2 passed" | tee -a "$logFile"
+        fi              
+        if [ "$bl_corner" = "6" -o "$bl_corner" = "" ]; then
+                echo "Disabling hot corner"
+                defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner 1
+                echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
+        fi
+        if [ "$tl_corner" = "6" -o "$tl_corner" = "" ]; then
+                echo "Disabling hot corner"
+                defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tl-corner 1
+                echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
+        fi
+        if [ "$tr_corner" = "6" -o "$tr_corner" = "" ]; then
+                echo "Disabling hot corner"
+                defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tr-corner 1
+                echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
+        fi
+        if [ "$br_corner" = "6" -o "$br_corner" = "" ]; then
+                echo "Disabling hot corner"
+                defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner 1
+                echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
+        fi
 fi
 
 
@@ -264,12 +260,13 @@ bl_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.do
 tl_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tl-corner)
 tr_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tr-corner)
 br_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner)
-if [ "$bl_corner" = "5" ] || [ "$tl_corner" = "5" ] || [ "$tr_corner" = "5" ] || [ "$br_corner" = "5" ]; then
-	echo $(date -u) "2.3.4 passed" | tee -a "$logFile"; else
-	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner 5
-	echo $(date -u) "2.3.4 remediated" | tee -a "$logFile"
+if [[ ( "$bl_corner" != "5" || "$bl_corner" = "" ) ]] || [[ ( "$tl_corner" != "5" || "$tl_corner" = "" ) ]] || [[ ( "$tr_corner" != "5" || "$tr_corner" = "" ) ]] || [[ ( "$br_corner" != "5" || "$br_corner" = "" ) ]]; then
+        defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner 5
+        echo $(date -u) "2.3.4 remediated" | tee -a "$logFile"; else
+        echo $(date -u) "2.3.4 passed" | tee -a "$logFile"
 fi
 fi
+
 
 # 2.4.1 Disable Remote Apple Events 
 # Verify organizational score
@@ -483,7 +480,7 @@ Audit2_6_5="$(defaults read "$plistlocation" OrgScore2_6_5)"
 if [ "$Audit2_6_5" = "1" ]; then
 echo $(date -u) "Checking 2.6.5" | tee -a "$logFile"
 appsInbound=$(/usr/libexec/ApplicationFirewall/socketfilterfw --listapps | grep ALF | awk '{print $7}')
-if [ "$appsInbound" -le "10" ] || [ -z "$appsInbound" ]; then
+if [ -z "$appsInbound" ] || [ "$appsInbound" -le 10 ]; then
 	echo $(date -u) "2.6.5 passed" | tee -a "$logFile"; else
 	echo $(date -u) "2.6.5 not remediated" | tee -a "$logFile"
 fi
@@ -829,33 +826,25 @@ fi
 fi
 
 # 5.4 Automatically lock the login keychain for inactivity
+# 5.5 Ensure login keychain is locked when the computer sleeps
+# We need to couple both of them as trying to change each setting individually will overwite each other
 # Verify organizational score
 Audit5_4="$(defaults read "$plistlocation" OrgScore5_4)"
-# If organizational score is 1 or true, check status of client
-# If client fails, then remediate
-if [ "$Audit5_4" = "1" ]; then
-echo $(date -u) "Checking 5.4" | tee -a "$logFile"
-keyTimeout=$(security show-keychain-info /Users/"$currentUser"/Library/Keychains/login.keychain 2>&1 | grep -c "no-timeout")
-	if [ "$keyTimeout" -gt 0 ]; then
-	security set-keychain-settings -u -t 21600s /Users/"$currentUser"/Library/Keychains/login.keychain
-	echo $(date -u) "5.4 remediated" | tee -a "$logFile"; else
-	echo $(date -u) "5.4 passed" | tee -a "$logFile"
-fi
-fi
-
-# 5.5 Ensure login keychain is locked when the computer sleeps
-# Verify organizational score
 Audit5_5="$(defaults read "$plistlocation" OrgScore5_5)"
 # If organizational score is 1 or true, check status of client
 # If client fails, then remediate
-if [ "$Audit5_5" = "1" ]; then
-echo $(date -u) "Checking 5.5" | tee -a "$logFile"
-	lockSleep=$(security show-keychain-info /Users/"$currentUser"/Library/Keychains/login.keychain 2>&1 | grep -c "lock-on-sleep")
-	if [ "$lockSleep" = 0 ]; then
-		security set-keychain-settings -l /Users/"$currentUser"/Library/Keychains/login.keychain
-		echo $(date -u) "5.5 remediated" | tee -a "$logFile"; else
-		echo $(date -u) "5.5 passed" | tee -a "$logFile"
-	fi
+if [ "$Audit5_4" = "1" ] || [ "$Audit5_5" = "1" ]; then
+        echo $(date -u) "Checking 5.4 & 5.5" | tee -a "$logFile"
+        if [ "$Audit5_4" = "1" ] && [ "$Audit5_5" = "1" ]; then
+                security set-keychain-settings -l -u -t 21600s /Users/"$currentUser"/Library/Keychains/login.keychain
+                echo $(date -u) "5.4 & 5.5 remediated" | tee -a "$logFile"
+        elif [ "$Audit5_4" = "1" ] && [ "$Audit5_5" = "0" ]; then
+                security set-keychain-settings -u -t 21600s /Users/"$currentUser"/Library/Keychains/login.keychain
+                echo $(date -u) "5.4 remediated" | tee -a "$logFile"
+        elif [ "$Audit5_4" = "0" ] && [ "$Audit5_5" = "1" ]; then
+                security set-keychain-settings -l /Users/"$currentUser"/Library/Keychains/login.keychain
+                echo $(date -u) "5.5 remediated" | tee -a "$logFile"
+        fi
 fi
 
 # 5.6 Enable OCSP and CRL certificate checking
@@ -997,7 +986,7 @@ if [ "$Audit6_1_2" = "1" ]; then
 echo $(date -u) "Checking 6.1.2" | tee -a "$logFile"
 	passwordHints=$(defaults read /Library/Preferences/com.apple.loginwindow RetriesUntilHint)
 	# If client fails, then remediate
-	if [ "$passwordHints" -gt 0 ]; then
+	if [ -z "$passwordHints" ] || [ "$passwordHints" -gt 0 ]; then
 		defaults write /Library/Preferences/com.apple.loginwindow RetriesUntilHint -int 0
 		echo $(date -u) "6.1.2 remediated" | tee -a "$logFile"; else
 		echo $(date -u) "6.1.2 passed" | tee -a "$logFile"
@@ -1028,7 +1017,7 @@ if [ "$Audit6_1_4" = "1" ]; then
 echo $(date -u) "Checking 6.1.4" | tee -a "$logFile"
 	afpGuestEnabled=$(defaults read /Library/Preferences/com.apple.AppleFileServer guestAccess)
 	smbGuestEnabled=$(defaults read /Library/Preferences/SystemConfiguration/com.apple.smb.server AllowGuestAccess)
-	if [ "$afpGuestEnabled" = "0" ] && [ "$smbGuestEnabled" = "0" ]; then
+    if [[ ( "$afpGuestEnabled" = "0" || "$afpGuestEnabled" = "" ) ]] && [[ ( "$smbGuestEnabled" = "0" || "$smbGuestEnabled" = "" ) ]]; then
 		echo $(date -u) "6.1.4 passed" | tee -a "$logFile"
 	fi
 	if [ "$afpGuestEnabled" = "1" ]; then
@@ -1062,7 +1051,7 @@ Audit6_2="$(defaults read "$plistlocation" OrgScore6_2)"
 # If client fails, then remediate
 if [ "$Audit6_2" = "1" ]; then
 echo $(date -u) "Checking 6.2" | tee -a "$logFile"
-filenameExt=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.finder AppleShowAllExtensions)
+filenameExt=$(defaults read /Users/"$currentUser"/Library/Preferences/.GlobalPreferences AppleShowAllExtensions)
 if [ "$filenameExt" = "1" ]; then
 	echo $(date -u) "6.2 passed" | tee -a "$logFile"; else
 	sudo -u "$currentUser" defaults write NSGlobalDomain AppleShowAllExtensions -bool true
@@ -1080,7 +1069,7 @@ Audit6_3="$(defaults read "$plistlocation" OrgScore6_3)"
 if [ "$Audit6_3" = "1" ]; then
 echo $(date -u) "Checking 6.3" | tee -a "$logFile"
 safariSafe=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.Safari AutoOpenSafeDownloads)
-if [ "$safariSafe" = "1" ]; then
+if [ -z "$safariSafe" ] || [ "$safariSafe" = "1" ]; then
 	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.Safari AutoOpenSafeDownloads -bool false
 	echo $(date -u) "6.3 remediated" | tee -a "$logFile"; else
 	echo $(date -u) "6.3 passed" | tee -a "$logFile"
