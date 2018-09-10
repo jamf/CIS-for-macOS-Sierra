@@ -207,6 +207,7 @@ if [ "$Audit2_3_1" = "1" ]; then
 	if [ "$screenSaverTime" -le "1200" ]; then
 	echo $(date -u) "2.3.1 passed" | tee -a "$logFile"; else
 	defaults write /Users/"$currentUser"/Library/Preferences/ByHost/com.apple.screensaver."$hardwareUUID".plist idleTime -int 1200
+	chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/ByHost/com.apple.screensaver."$hardwareUUID".plist
 	echo $(date -u) "2.3.1 remediated" | tee -a "$logFile"
 	fi
 fi
@@ -228,21 +229,25 @@ if [ "$Audit2_3_2" = "1" ]; then
         if [ "$bl_corner" = "6" -o "$bl_corner" = "" ]; then
                 echo "Disabling hot corner"
                 defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner 1
+				chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.dock.plist
                 echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
         fi
         if [ "$tl_corner" = "6" -o "$tl_corner" = "" ]; then
                 echo "Disabling hot corner"
                 defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tl-corner 1
+				chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.dock.plist
                 echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
         fi
         if [ "$tr_corner" = "6" -o "$tr_corner" = "" ]; then
                 echo "Disabling hot corner"
                 defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-tr-corner 1
+				chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.dock.plist
                 echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
         fi
         if [ "$br_corner" = "6" -o "$br_corner" = "" ]; then
                 echo "Disabling hot corner"
                 defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner 1
+				chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.dock.plist
                 echo $(date -u) "2.3.2 remediated" | tee -a "$logFile"
         fi
 fi
@@ -262,6 +267,7 @@ tr_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.do
 br_corner=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-br-corner)
 if [[ ( "$bl_corner" != "5" || "$bl_corner" = "" ) ]] || [[ ( "$tl_corner" != "5" || "$tl_corner" = "" ) ]] || [[ ( "$tr_corner" != "5" || "$tr_corner" = "" ) ]] || [[ ( "$br_corner" != "5" || "$br_corner" = "" ) ]]; then
         defaults write /Users/"$currentUser"/Library/Preferences/com.apple.dock wvous-bl-corner 5
+		chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.dock.plist
         echo $(date -u) "2.3.4 remediated" | tee -a "$logFile"; else
         echo $(date -u) "2.3.4 passed" | tee -a "$logFile"
 fi
@@ -528,6 +534,7 @@ secureKeyboard=$(defaults read /Users/"$currentUser"/Library/Preferences/com.app
 if [ "$secureKeyboard" = "1" ]; then
 	echo $(date -u) "2.10 passed" | tee -a "$logFile"; else
 	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.Terminal SecureKeyboardEntry -bool true
+	chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.Terminal.plist
 	echo $(date -u) "2.10 remediated" | tee -a "$logFile"
 fi
 fi
@@ -763,7 +770,7 @@ Audit5_1_1="$(defaults read "$plistlocation" OrgScore5_1_1)"
 if [ "$Audit5_1_1" = "1" ]; then
 echo $(date -u) "Checking 5.1.1" | tee -a "$logFile"
 # If client fails, then remediate
-	for userDirs in $( find /Users -mindepth 1 -maxdepth 1 -type d -perm -1 | grep -v "Shared" | grep -v "Guest" ); do
+	find /Users -mindepth 1 -maxdepth 1 -type d -perm -1 | grep -v "Shared" | grep -v "Guest" | while read -r userDirs; do
 		chmod -R og-rwx "$userDirs"
 	done
 	echo $(date -u) "5.1.1 enforced" | tee -a "$logFile"
@@ -776,7 +783,7 @@ Audit5_1_2="$(defaults read "$plistlocation" OrgScore5_1_2)"
 # If client fails, then remediate
 if [ "$Audit5_1_2" = "1" ]; then
 echo $(date -u) "Checking 5.1.2" | tee -a "$logFile"
-for apps in $( find /Applications -iname "*\.app" -type d -perm -2 -ls ); do
+find /Applications -iname "*\.app" -type d -perm -2 | while read -r apps; do
             chmod -R o-w "$apps"
         done
         echo $(date -u) "5.1.2 enforced" | tee -a "$logFile"
@@ -789,7 +796,7 @@ Audit5_1_3="$(defaults read "$plistlocation" OrgScore5_1_3)"
 # If client fails, then remediate
 if [ "$Audit5_1_3" = "1" ]; then
 echo $(date -u) "Checking 5.1.3" | tee -a "$logFile"
-for sysPermissions in $( find /System -type d -perm -2 -ls | grep -v "Public/Drop Box" ); do
+find /System -type d -perm -2 | grep -v "Public/Drop Box" | while read -r sysPermissions; do
             chmod -R o-w "$sysPermissions"
         done
         echo $(date -u) "5.1.3 enforced" | tee -a "$logFile"
@@ -804,7 +811,7 @@ if [ "$Audit5_1_4" = "1" ]; then
 echo $(date -u) "Checking 5.1.4" | tee -a "$logFile"
 # Exempts Adobe files by default!
 # for libPermissions in $( find /Library -type d -perm -2 | grep -v Caches ); do
-for libPermissions in $( find /Library -type d -perm -2 -ls | grep -v Caches | grep -v Adobe); do
+find /Library -type d -perm -2 | grep -v Caches | grep -v Adobe | while read -r libPermissions; do
             chmod -R o-w "$libPermissions"
         done
         echo $(date -u) "5.1.4 enforced" | tee -a "$logFile"
@@ -862,6 +869,7 @@ if [ "$Audit5_6" = "1" ]; then
 		defaults write com.apple.security.revocation CRLStyle -string RequireIfPresent
 		defaults write /Users/"$currentUser"/Library/Preferences/com.apple.security.revocation OCSPStyle -string RequireIfPresent
 		defaults write /Users/"$currentUser"/Library/Preferences/com.apple.security.revocation CRLStyle -string RequireIfPresent
+		chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.security.revocation.plist
 		echo $(date -u) "5.6 remediated" | tee -a "$logFile"
 		else
 		echo $(date -u) "5.6 passed" | tee -a "$logFile"
@@ -909,6 +917,7 @@ screensaverPwd=$(defaults read /Users/"$currentUser"/Library/Preferences/com.app
 if [ "$screensaverPwd" = "1" ]; then
 	echo $(date -u) "5.9 passed" | tee -a "$logFile"; else
 	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.screensaver askForPassword -int 1
+	chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.screensaver.plist
 	echo $(date -u) "5.9 remediated" | tee -a "$logFile"
 fi
 fi
@@ -1071,6 +1080,7 @@ echo $(date -u) "Checking 6.3" | tee -a "$logFile"
 safariSafe=$(defaults read /Users/"$currentUser"/Library/Preferences/com.apple.Safari AutoOpenSafeDownloads)
 if [ -z "$safariSafe" ] || [ "$safariSafe" = "1" ]; then
 	defaults write /Users/"$currentUser"/Library/Preferences/com.apple.Safari AutoOpenSafeDownloads -bool false
+	chown "$currentUser":staff /Users/"$currentUser"/Library/Preferences/com.apple.Safari.plist
 	echo $(date -u) "6.3 remediated" | tee -a "$logFile"; else
 	echo $(date -u) "6.3 passed" | tee -a "$logFile"
 fi
