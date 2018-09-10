@@ -713,7 +713,7 @@ fi
 Audit5_1_2="$(defaults read "$plistlocation" OrgScore5_1_2)"
 # If organizational score is 1 or true, check status of client
 if [ "$Audit5_1_2" = "1" ]; then
-	appPermissions=$(find /Applications -iname "*\.app" -type d -perm -2 -ls | wc -l | xargs)
+	appPermissions=$(find /Applications -iname "*\.app" -type d -perm -2 | wc -l | xargs)
 	# If client fails, then note category in audit file
 	if [ "$appPermissions" = "0" ]; then
 		echo "5.1.2 passed"; else
